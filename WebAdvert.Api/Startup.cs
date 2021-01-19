@@ -10,6 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using WebAdvert.Api.Services;
 
 namespace WebAdvert.Api
 {
@@ -25,6 +27,8 @@ namespace WebAdvert.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddAutoMapper(typeof(Startup));
+            services.AddTransient<IAdvertStorageService, DynamoDbAdvertStorage>();
             services.AddControllers();
         }
 
