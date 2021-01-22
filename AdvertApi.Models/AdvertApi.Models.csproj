@@ -5,7 +5,11 @@
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>CamiloFog</Authors>
     <Company>None</Company>
-    <Product>Web Advert Microservices</Product>
+    <Product>Advert Models Microservices</Product>
+    <RepositoryUrl>https://github.com/camilofg/WebAdvert.Api</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/camilofg/WebAdvert.Api</PackageProjectUrl>
+    <PackageId>Cfg.AdvertApi.Models</PackageId>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
 </Project>

@@ -67,5 +67,22 @@ namespace WebAdvert.Api.Controllers
                 throw;
             }
         }
+
+
+        [HttpGet]
+        [Route("CheckHealth")]
+        public async Task<IActionResult> Health()
+        {
+            try
+            {
+                var result = await _advertStorage.HealthCheckAsync();
+                return StatusCode(200, result);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.Message);
+            }
+           
+        }
     }
 }

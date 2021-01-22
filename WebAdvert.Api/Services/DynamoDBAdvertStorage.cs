@@ -13,20 +13,21 @@ namespace WebAdvert.Api.Services
     public class DynamoDbAdvertStorage : IAdvertStorageService
     {
         private readonly IMapper _mapper;
+        private readonly AmazonDynamoDBClient _client;
 
-        public DynamoDbAdvertStorage(IMapper mapper)
+        public DynamoDbAdvertStorage(IMapper mapper, IAmazonDynamoDB client)
         {
             _mapper = mapper;
+            _client = (AmazonDynamoDBClient) client;
         }
 
         public async Task<string> CreateAdvert(AdvertModel model)
         {
             var dbModel = _mapper.Map<AdvertDTO>(model);
-            dbModel.Id = new Guid().ToString();
+            dbModel.Id = Guid.NewGuid().ToString();
             dbModel.CreationDate = DateTime.UtcNow;
             dbModel.Status = AdvertStatus.Pending;
-            using var client = new AmazonDynamoDBClient();
-            using (var context = new DynamoDBContext(client))
+            using (var context = new DynamoDBContext(_client))
             {
                 await context.SaveAsync(dbModel);
             }
@@ -35,8 +36,7 @@ namespace WebAdvert.Api.Services
 
         public async Task ConfirmAdvert(AdvertConfirmModel model)
         {
-            using var client = new AmazonDynamoDBClient();
-            using (var context = new DynamoDBContext(client))
+            using (var context = new DynamoDBContext(_client))
             {
                 var record = await context.LoadAsync<AdvertDTO>(model.Id);
                 if(record == null)
@@ -50,6 +50,36 @@ namespace WebAdvert.Api.Services
                 {
                     await context.DeleteAsync(record);
                 }
+            }
+        }
+
+        public async Task<bool> HealthCheckAsync()
+        {
+            try
+            {
+                var tableData = await _client.DescribeTableAsync("Adverts");
+                return string.Compare(tableData.Table.TableStatus, "active", true) == 0;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+
+            return false;
+        }
+
+        public async Task<string> HealthAsync()
+        {
+            try
+            {
+                var tableData = await _client.DescribeTableAsync("Adverts");
+                return tableData.Table.TableStatus.Value;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return e.Message + " || " + e.StackTrace;
             }
         }
     }

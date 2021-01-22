@@ -8,9 +8,13 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Amazon.DynamoDBv2;
 using AutoMapper;
+using Microsoft.OpenApi.Models;
+using WebAdvert.Api.HealthChecks;
 using WebAdvert.Api.Services;
 
 namespace WebAdvert.Api
@@ -27,9 +31,29 @@ namespace WebAdvert.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllOrigin", policy => policy.WithOrigins("*").AllowAnyHeader());
+            });
+            var awsOptions = Configuration.GetAWSOptions();
+            services.AddDefaultAWSOptions(awsOptions);
+            services.AddAWSService<IAmazonDynamoDB>();
+
             services.AddAutoMapper(typeof(Startup));
             services.AddTransient<IAdvertStorageService, DynamoDbAdvertStorage>();
             services.AddControllers();
+           
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Version = "v1",
+                    Title = "Advert Api",
+                    Description = "Api for adverts creation",
+                });
+
+            });
+            services.AddHealthChecks().AddCheck<StorageHealthCheck>("Storage");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -44,12 +68,25 @@ namespace WebAdvert.Api
 
             app.UseRouting();
 
+            app.UseCors("AllOrigin");
+
             app.UseAuthorization();
+
+            app.UseSwagger();
+
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Adverts API V1");
+                c.RoutePrefix = string.Empty;
+            });
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHealthChecks("/health");
             });
+
+            //app.UseHealthChecks("/health");
         }
     }
 }

@@ -8,7 +8,7 @@ using Amazon.DynamoDBv2.DataModel;
 
 namespace WebAdvert.Api.Services
 {
-    [DynamoDBTable("Advert")]
+    [DynamoDBTable("Adverts")]
     public class AdvertDTO
     {
         [DynamoDBHashKey]

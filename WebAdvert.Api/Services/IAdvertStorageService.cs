@@ -11,5 +11,7 @@ namespace WebAdvert.Api.Services
         public Task<string> CreateAdvert(AdvertModel model);
 
         public Task ConfirmAdvert(AdvertConfirmModel model);
+
+        public Task<bool> HealthCheckAsync();
     }
 }
